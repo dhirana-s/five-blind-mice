@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+import { useAlerts } from '../hooks/useAlerts.js'  // Adjust path
+console.log('PABDashboard: Before importing useAlerts')
+console.log('PABDashboard: useAlerts imported')
 
 // ─────────────────────────────────────────────
 // MOCK DATA
