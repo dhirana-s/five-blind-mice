@@ -1,6 +1,5 @@
-import { supabase } from '../lib/supabase.js'  // Adjust path if needed
+import { supabase } from '../lib/supabase.js'
 import { useEffect, useState } from 'react'
-console.log('useAlerts: Supabase imported successfully')
 
 export function useAlerts() {
   const [alerts, setAlerts]   = useState([])

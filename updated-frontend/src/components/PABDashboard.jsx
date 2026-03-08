@@ -1,7 +1,4 @@
 import { useState, useEffect } from "react";
-import { useAlerts } from '../hooks/useAlerts.js'  // Adjust path
-console.log('PABDashboard: Before importing useAlerts')
-console.log('PABDashboard: useAlerts imported')
 
 // ─────────────────────────────────────────────
 // MOCK DATA
@@ -595,102 +592,6 @@ function TriageModal({ alert, onClose, onDispatch, onCallback, onResolve }) {
   );
 }
 
-// ─── ALERT ROW ───────────────────────────────
-function AlertRow({ alert, onView }) {
-  const tc = TIER[alert.triage_tier] || T.nonUrgent;
-  const pills = buildPills(alert).slice(0,3);
-  const s = useElapsedSecs(alert.start_time);
-  const isOverdue = alert.triage_tier==="URGENT" && s>300;
-
-  return (
-    <div onClick={() => onView(alert)}
-      style={{ display:"grid", gridTemplateColumns:"4px 1fr auto",
-        background: isOverdue ? T.urgent.bg : T.surface,
-        border:`1px solid ${isOverdue ? T.urgent.border : T.border}`,
-        borderRadius:10, marginBottom:6, cursor:"pointer", overflow:"hidden",
-        boxShadow:"0 1px 3px rgba(0,0,0,0.05)", transition:"box-shadow 0.15s, border-color 0.15s" }}
-      onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.1)"; e.currentTarget.style.borderColor=tc.border; }}
-      onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.05)"; e.currentTarget.style.borderColor=isOverdue?T.urgent.border:T.border; }}>
-
-      <div style={{ background:tc.badge }} />
-
-      <div style={{ padding:"11px 16px", display:"flex", alignItems:"center", gap:16 }}>
-        {/* Score */}
-        <div style={{ flexShrink:0, textAlign:"center", width:54 }}>
-          <div style={{ fontSize:8, fontFamily:"'JetBrains Mono',monospace", fontWeight:700,
-            letterSpacing:1.5, color:tc.text, textTransform:"uppercase", marginBottom:2 }}>
-            {alert.triage_tier.replace("_","-")}
-          </div>
-          <div style={{ fontSize:24, fontWeight:800, color:tc.badge, lineHeight:1,
-            fontFamily:"'JetBrains Mono',monospace" }}>
-            {Math.round(alert.final_urgency_score*100)}
-          </div>
-        </div>
-
-        {/* Senior */}
-        <div style={{ flex:1, minWidth:0 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:5, flexWrap:"wrap" }}>
-            <span style={{ fontSize:14, fontWeight:700, color:T.text }}>{alert.senior.name}</span>
-            <span style={{ fontSize:11, color:T.textSub }}>{alert.senior.age}{alert.senior.gender}</span>
-            {alert.senior.lives_alone && (
-              <span style={{ fontSize:10, padding:"1px 6px", borderRadius:3,
-                background:T.urgent.soft, color:T.urgent.text, border:`1px solid ${T.urgent.border}`,
-                fontFamily:"'JetBrains Mono',monospace", fontWeight:700 }}>ALONE</span>
-            )}
-            <span style={{ fontSize:10, padding:"1px 6px", borderRadius:3,
-              background:"#ede9fe", color:"#6d28d9", border:"1px solid #ddd6fe",
-              fontFamily:"'JetBrains Mono',monospace" }}>{alert.senior.device_location}</span>
-            <span style={{ fontSize:10, color:T.textFaint,
-              fontFamily:"'JetBrains Mono',monospace" }}>CCI {alert.senior.cci_score}</span>
-            <span style={{ fontSize:10, color:T.textFaint,
-              fontFamily:"'JetBrains Mono',monospace" }}>#{alert.incident_id.slice(-4)}</span>
-          </div>
-          <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
-            {pills.map((p,i) => <Pill key={i} {...p} />)}
-          </div>
-        </div>
-
-        {/* Language */}
-        <div style={{ flexShrink:0, textAlign:"center", minWidth:68 }}>
-          <div style={{ fontSize:8, color:T.textFaint, letterSpacing:1, textTransform:"uppercase",
-            fontFamily:"'JetBrains Mono',monospace", marginBottom:2 }}>Lang</div>
-          <div style={{ fontSize:12, fontWeight:700, fontFamily:"'JetBrains Mono',monospace",
-            color: alert.forensics.language_confidence<0.7?"#b45309":T.textMid }}>
-            {alert.forensics.detected_language}
-          </div>
-          <div style={{ fontSize:10, color:T.textFaint }}>
-            {Math.round(alert.forensics.language_confidence*100)}%
-          </div>
-        </div>
-
-        {/* Timer */}
-        <div style={{ flexShrink:0, textAlign:"right", minWidth:60 }}>
-          <ElapsedBadge isoTime={alert.start_time} tier={alert.triage_tier} />
-          {isOverdue && <div style={{ fontSize:9, color:T.urgent.text,
-            fontFamily:"'JetBrains Mono',monospace" }}>OVERDUE</div>}
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div style={{ display:"flex", flexDirection:"column", justifyContent:"center",
-        padding:"8px 12px", gap:5, background:T.surfaceAlt,
-        borderLeft:`1px solid ${T.border}`, minWidth:128 }}>
-        <button onClick={e=>{ e.stopPropagation(); onView(alert); }}
-          style={{ padding:"5px 12px", borderRadius:6, border:`1px solid ${tc.badge}`,
-            background:tc.soft, color:tc.text, cursor:"pointer",
-            fontSize:11, fontWeight:700, fontFamily:"'JetBrains Mono',monospace" }}>
-          View Details →
-        </button>
-        <button onClick={e=>{ e.stopPropagation(); onView(alert); }}
-          style={{ padding:"5px 12px", borderRadius:6, border:`1px solid ${T.borderMid}`,
-            background:T.surface, color:T.textSub, cursor:"pointer", fontSize:11 }}>
-          📞 Call Back
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // ─── MAIN ────────────────────────────────────
 export default function PABDashboard() {
   const [selected, setSelected] = useState(null);
@@ -811,7 +712,81 @@ export default function PABDashboard() {
                 <div style={{ fontSize:28, marginBottom:8 }}>✓</div>
                 <div style={{ fontSize:14 }}>All clear — no pending alerts</div>
               </div>
-            : sorted.map(a => <AlertRow key={a.incident_id} alert={a} onView={setSelected} />)
+            : <div style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:12,
+                overflow:"hidden", boxShadow:"0 1px 4px rgba(0,0,0,0.06)" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse" }}>
+                  <thead>
+                    <tr style={{ background:T.surfaceAlt, borderBottom:`1px solid ${T.border}` }}>
+                      <th style={{ padding:"12px 16px", textAlign:"left", fontSize:12, fontWeight:700,
+                        color:T.text, textTransform:"uppercase", letterSpacing:1,
+                        fontFamily:"'JetBrains Mono',monospace" }}>Elderly Name</th>
+                      <th style={{ padding:"12px 16px", textAlign:"left", fontSize:12, fontWeight:700,
+                        color:T.text, textTransform:"uppercase", letterSpacing:1,
+                        fontFamily:"'JetBrains Mono',monospace" }}>Triage</th>
+                      <th style={{ padding:"12px 16px", textAlign:"left", fontSize:12, fontWeight:700,
+                        color:T.text, textTransform:"uppercase", letterSpacing:1,
+                        fontFamily:"'JetBrains Mono',monospace" }}>Medical Condition</th>
+                      <th style={{ padding:"12px 16px", textAlign:"left", fontSize:12, fontWeight:700,
+                        color:T.text, textTransform:"uppercase", letterSpacing:1,
+                        fontFamily:"'JetBrains Mono',monospace" }}>CCI</th>
+                      <th style={{ padding:"12px 16px", textAlign:"left", fontSize:12, fontWeight:700,
+                        color:T.text, textTransform:"uppercase", letterSpacing:1,
+                        fontFamily:"'JetBrains Mono',monospace" }}>Agent Consensus</th>
+                      <th style={{ padding:"12px 16px", textAlign:"left", fontSize:12, fontWeight:700,
+                        color:T.text, textTransform:"uppercase", letterSpacing:1,
+                        fontFamily:"'JetBrains Mono',monospace" }}>Time Elapsed</th>
+                      <th style={{ padding:"12px 16px", textAlign:"left", fontSize:12, fontWeight:700,
+                        color:T.text, textTransform:"uppercase", letterSpacing:1,
+                        fontFamily:"'JetBrains Mono',monospace" }}>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sorted.map(a => {
+                      const triageColor = a.triage_tier==="URGENT"?"#ef4444":
+                                         a.triage_tier==="UNCERTAIN"?"#f59e0b":"#16a34a";
+                      return (
+                        <tr key={a.incident_id} style={{ borderBottom:`1px solid ${T.border}`,
+                          borderLeft:`4px solid ${triageColor}`, cursor:"pointer",
+                          transition:"box-shadow 0.15s" }}
+                          onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,0.08)"; }}
+                          onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; }}>
+                          <td style={{ padding:"12px 16px", fontSize:14, fontWeight:700, color:T.text }}>
+                            {a.senior.name}
+                          </td>
+                          <td style={{ padding:"12px 16px", fontSize:12, fontWeight:700, color:triageColor,
+                            fontFamily:"'JetBrains Mono',monospace", textTransform:"uppercase" }}>
+                            {a.triage_tier.replace("_","-")}
+                          </td>
+                          <td style={{ padding:"12px 16px", fontSize:12, color:T.textMid }}>
+                            {a.senior.medical_conditions.join(", ")}
+                          </td>
+                          <td style={{ padding:"12px 16px", fontSize:12, fontWeight:700, color:T.text,
+                            fontFamily:"'JetBrains Mono',monospace" }}>
+                            {a.senior.cci_score}
+                          </td>
+                          <td style={{ padding:"12px 16px", fontSize:12, color:T.textMid,
+                            maxWidth:250, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                            {a.forensics.agent_consensus}
+                          </td>
+                          <td style={{ padding:"12px 16px" }}>
+                            <ElapsedBadge isoTime={a.start_time} tier={a.triage_tier} />
+                          </td>
+                          <td style={{ padding:"12px 16px" }}>
+                            <button onClick={()=>setSelected(a)} style={{ padding:"6px 12px", borderRadius:6,
+                              border:`1px solid ${triageColor}`,
+                              background: triageColor==="#ef4444"?T.urgent.soft:
+                                         triageColor==="#f59e0b"?T.uncertain.soft:T.nonUrgent.soft,
+                              color:triageColor, cursor:"pointer", fontSize:11, fontWeight:700,
+                              fontFamily:"'JetBrains Mono',monospace" }}>
+                              View
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
           }
         </div>
 
